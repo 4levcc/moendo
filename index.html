@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Análise Estratégica: Moendo Construções</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals (Slate, Stone, Zinc) with a Teal Accent -->
+    <!-- Application Structure Plan: A single-page dashboard application with a fixed sidebar for navigation. This structure was chosen to transform the linear report into an exploratory tool. Users can jump between high-level summaries (Dashboard), deep dives into specific areas (Modelo de Negócio, Mercado), and actionable insights (Estratégia). This non-linear approach enhances usability by allowing users to access the most relevant information quickly, rather than scrolling through a long document. Key interactions include toggles to compare entities, interactive charts, and clickable elements to reveal detailed information, fostering engagement and understanding. -->
+    <!-- Visualization & Content Choices: 
+        - Dashboard Key Metrics (HTML/CSS): Goal: Inform. Method: Styled cards to provide a quick, high-level overview of the company's status. Justification: Immediately grounds the user with the most critical data points.
+        - Dual Entity Diagram (HTML/CSS): Goal: Organize/Explain Relationships. Method: Flexbox-based diagram with borders and icons to visually represent the synergy between the two CNPJs. Justification: Clarifies the report's most complex and important concept – the dual business model – in a simple visual format.
+        - Market Drivers Chart (Chart.js Bar Chart): Goal: Compare. Method: A dynamic bar chart to visualize the impact of different market growth vectors. Justification: Provides a quantitative and easily digestible comparison of market opportunities.
+        - SWOT Grid (Interactive HTML/CSS): Goal: Organize. Method: A 2x2 grid where clicking each quadrant reveals detailed information. Justification: A classic, intuitive interface for presenting strategic analysis that encourages user interaction.
+        - Recommendations Accordion (HTML/JS): Goal: Organize/Inform. Method: A list where each item can be expanded to show details. Justification: Presents a large amount of text in a compact, organized manner, preventing information overload.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .bg-custom-light { background-color: #f8fafc; }
+        .bg-custom-dark { background-color: #0f172a; }
+        .text-custom-accent { color: #14b8a6; }
+        .border-custom-accent { border-color: #14b8a6; }
+        .bg-custom-accent { background-color: #14b8a6; }
+        .bg-custom-accent-hover:hover { background-color: #0d9488; }
+        .section { display: none; }
+        .section.active { display: block; }
+        .nav-item { transition: all 0.2s ease-in-out; }
+        .nav-item.active { background-color: #1e293b; color: #14b8a6; }
+        .nav-item:not(.active):hover { background-color: #334155; }
+        .card { background-color: #ffffff; border-radius: 0.75rem; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); padding: 1.5rem; transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -2px rgb(0 0 0 / 0.1); }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 400px; } }
+    </style>
+</head>
+<body class="bg-custom-light">
+
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-custom-dark text-white flex-shrink-0">
+            <div class="p-6 text-center border-b border-gray-700">
+                <h1 class="text-2xl font-bold text-white">Moendo</h1>
+                <p class="text-sm text-gray-400">Análise Estratégica</p>
+            </div>
+            <nav class="mt-6">
+                <a href="#dashboard" class="nav-item active flex items-center px-6 py-3 text-lg">
+                    <span class="mr-3">📊</span> Visão Geral
+                </a>
+                <a href="#modelo" class="nav-item flex items-center px-6 py-3 text-lg">
+                    <span class="mr-3">⚙️</span> Modelo de Negócio
+                </a>
+                <a href="#mercado" class="nav-item flex items-center px-6 py-3 text-lg">
+                    <span class="mr-3">📈</span> Análise de Mercado
+                </a>
+                <a href="#desempenho" class="nav-item flex items-center px-6 py-3 text-lg">
+                    <span class="mr-3">🏆</span> Desempenho
+                </a>
+                <a href="#estrategia" class="nav-item flex items-center px-6 py-3 text-lg">
+                    <span class="mr-3">🎯</span> Estratégia
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-6 md:p-10">
+            
+            <!-- Visão Geral Section -->
+            <section id="dashboard" class="section active">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Painel de Controle Estratégico</h2>
+                <p class="text-slate-600 mb-8">Principais indicadores e insights da análise da Moendo Construções.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="card">
+                        <h3 class="font-bold text-slate-800 text-lg">Faturamento Público Federal</h3>
+                        <p class="text-4xl font-bold text-custom-accent mt-2">+ R$ 10,3 mi</p>
+                        <p class="text-slate-500 text-sm mt-1">Recursos recebidos desde 2002.</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold text-slate-800 text-lg">Atuação Geográfica</h3>
+                        <p class="text-4xl font-bold text-custom-accent mt-2">4+ Estados</p>
+                        <p class="text-slate-500 text-sm mt-1">Presença confirmada no Nordeste (PE, BA, RN, AL).</p>
+                    </div>
+                    <div class="card bg-teal-50 border-l-4 border-custom-accent">
+                        <h3 class="font-bold text-slate-800 text-lg">Força Central</h3>
+                        <p class="text-2xl font-semibold text-teal-800 mt-2">Estrutura Fiscal Dual</p>
+                        <p class="text-teal-600 text-sm mt-1">Otimização de custos via 2 CNPJs.</p>
+                    </div>
+                    <div class="card bg-amber-50 border-l-4 border-amber-500">
+                        <h3 class="font-bold text-slate-800 text-lg">Alerta Crítico</h3>
+                        <p class="text-2xl font-semibold text-amber-800 mt-2">Sem Certificação PBQP-H</p>
+                        <p class="text-amber-600 text-sm mt-1">Impede acesso a projetos federais habitacionais.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+                    <div class="card">
+                         <h3 class="text-xl font-bold text-slate-800 mb-4">Arquitetura do Negócio</h3>
+                         <p class="text-slate-600 mb-6">A Moendo opera com uma estrutura dualista para maximizar a eficiência fiscal e operacional, separando grandes contratos públicos de serviços de nicho.</p>
+                         <div class="space-y-4">
+                            <div class="p-4 border rounded-lg bg-slate-50">
+                                <p class="font-bold text-slate-700">Moendo Comércio e Construções Ltda</p>
+                                <p class="text-sm text-slate-500">Veículo para grandes licitações (Lucro Real/Presumido)</p>
+                            </div>
+                             <div class="flex justify-center items-center text-slate-400">
+                                <span class="text-2xl"> symbiotic_relationship </span>
+                            </div>
+                             <div class="p-4 border rounded-lg bg-slate-50">
+                                <p class="font-bold text-slate-700">D M Correia / DPF Center I</p>
+                                <p class="text-sm text-slate-500">Braço de serviços e nichos (Simples Nacional)</p>
+                            </div>
+                         </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="text-xl font-bold text-slate-800 mb-4">Ecossistema de Mercado</h3>
+                        <p class="text-slate-600 mb-6">A empresa navega em um cenário competitivo diversificado, enfrentando desde gigantes regionais até especialistas locais em seus diferentes segmentos de atuação.</p>
+                        <ul class="space-y-3">
+                            <li class="flex items-start"><span class="text-custom-accent mr-3 mt-1">🏢</span> <div><span class="font-semibold">Grandes Players:</span> Moura Dubeux (líder regional).</div></li>
+                            <li class="flex items-start"><span class="text-custom-accent mr-3 mt-1">🏛️</span> <div><span class="font-semibold">Concorrência Pública:</span> Players de médio porte em licitações.</div></li>
+                            <li class="flex items-start"><span class="text-custom-accent mr-3 mt-1">🔩</span> <div><span class="font-semibold">Nicho de Drywall:</span> Empresas especializadas em Recife.</div></li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Modelo de Negócio Section -->
+            <section id="modelo" class="section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Modelo de Negócio Integrado</h2>
+                <p class="text-slate-600 mb-8">Análise da estrutura de dupla entidade que define a estratégia competitiva da Moendo.</p>
+                
+                <div class="bg-white rounded-lg shadow p-6 mb-8">
+                    <div class="flex justify-center mb-6">
+                        <div class="flex rounded-md bg-slate-200 p-1">
+                            <button id="btn-cnpj1" class="px-6 py-2 text-sm font-semibold rounded-md bg-white text-custom-accent shadow">Moendo Construções</button>
+                            <button id="btn-cnpj2" class="px-6 py-2 text-sm font-semibold text-slate-600">DPF Center I</button>
+                        </div>
+                    </div>
+
+                    <div id="info-cnpj1" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-800">Moendo Comércio e Construções Ltda</h3>
+                            <p class="text-sm text-slate-500 mb-4">CNPJ: 05.466.712/0001-14</p>
+                            <p class="text-slate-700">O motor comercial do grupo, focado em contratos públicos de grande escala. Sua estrutura robusta permite assumir projetos de maior risco e valor, aproveitando créditos fiscais para otimizar preços em licitações de materiais.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="p-3 border-l-4 border-slate-300 bg-slate-50 rounded-r-lg"><strong>Natureza Jurídica:</strong> Sociedade Empresária Limitada</div>
+                            <div class="p-3 border-l-4 border-slate-300 bg-slate-50 rounded-r-lg"><strong>Regime Tributário:</strong> Lucro Presumido / Lucro Real</div>
+                            <div class="p-3 border-l-4 border-slate-300 bg-slate-50 rounded-r-lg"><strong>Foco Principal:</strong> Veículo para grandes contratos e licitações públicas.</div>
+                        </div>
+                    </div>
+                    <div id="info-cnpj2" class="hidden grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                             <h3 class="text-xl font-bold text-slate-800">D M Correia / DPF Center I</h3>
+                            <p class="text-sm text-slate-500 mb-4">CNPJ: 15.337.766/0001-33</p>
+                            <p class="text-slate-700">O braço ágil e especializado, operando sob o Simples Nacional para oferecer serviços de nicho com alta competitividade de custo. Sua versatilidade permite explorar oportunidades em manutenção industrial, reparos e outros serviços técnicos.</p>
+                        </div>
+                        <div class="space-y-3">
+                            <div class="p-3 border-l-4 border-teal-300 bg-teal-50 rounded-r-lg"><strong>Natureza Jurídica:</strong> Empresário (Individual)</div>
+                            <div class="p-3 border-l-4 border-teal-300 bg-teal-50 rounded-r-lg"><strong>Regime Tributário:</strong> Simples Nacional (EPP)</div>
+                            <div class="p-3 border-l-4 border-teal-300 bg-teal-50 rounded-r-lg"><strong>Foco Principal:</strong> Operações de nicho, serviços especializados e otimização fiscal.</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Análise de Mercado Section -->
+            <section id="mercado" class="section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Cenário de Mercado</h2>
+                <p class="text-slate-600 mb-8">Oportunidades e desafios no dinâmico setor da construção do Nordeste.</p>
+                 <div class="card">
+                    <h3 class="text-xl font-bold text-slate-800 mb-1">Vetores de Crescimento no Nordeste</h3>
+                    <p class="text-slate-600 mb-6">O mercado regional é impulsionado por um forte ciclo de investimentos públicos e pela demanda habitacional.</p>
+                    <div class="chart-container">
+                        <canvas id="marketChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Desempenho Section -->
+            <section id="desempenho" class="section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Capacidade Operacional e Desempenho</h2>
+                <p class="text-slate-600 mb-8">Análise da performance da empresa em contratos públicos e sua maturidade operacional.</p>
+                
+                <div class="card mb-8">
+                     <h3 class="text-xl font-bold text-slate-800 mb-4">Desempenho em Licitações Públicas</h3>
+                     <p class="text-slate-600 mb-6">A Moendo demonstra uma robusta capacidade de vencer contratos em múltiplos estados do Nordeste. A tabela abaixo resume exemplos de contratos identificados.</p>
+                     <div class="overflow-x-auto">
+                        <table class="w-full text-left">
+                            <thead class="bg-slate-100 text-slate-600">
+                                <tr>
+                                    <th class="p-3 font-semibold">Órgão</th>
+                                    <th class="p-3 font-semibold">UF</th>
+                                    <th class="p-3 font-semibold">Objeto</th>
+                                    <th class="p-3 font-semibold">Ano</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y">
+                                <tr class="hover:bg-slate-50"><td class="p-3">Prefeitura de Camaragibe</td><td class="p-3">PE</td><td class="p-3">Fornecimento</td><td class="p-3">2024</td></tr>
+                                <tr class="hover:bg-slate-50"><td class="p-3">TRT-5</td><td class="p-3">BA</td><td class="p-3">Fornecimento de Cadeiras</td><td class="p-3">2023</td></tr>
+                                <tr class="hover:bg-slate-50"><td class="p-3">Governo de Alagoas</td><td class="p-3">AL</td><td class="p-3">Fornecimento de Colchões</td><td class="p-3">2022</td></tr>
+                                <tr class="hover:bg-slate-50"><td class="p-3">TRT-21</td><td class="p-3">RN</td><td class="p-3">Pregão Eletrônico</td><td class="p-3">2020</td></tr>
+                                <tr class="hover:bg-slate-50"><td class="p-3">Exército Brasileiro</td><td class="p-3">PE</td><td class="p-3">Serviços de Pintura</td><td class="p-3">2020</td></tr>
+                            </tbody>
+                        </table>
+                     </div>
+                </div>
+
+                <div class="card border-t-4 border-red-500 bg-red-50">
+                     <h3 class="text-xl font-bold text-red-800 mb-2">Lacuna Estratégica: A Falta da Certificação PBQP-H</h3>
+                     <p class="text-red-700">A ausência desta certificação é a fraqueza mais crítica da empresa. O PBQP-H é um pré-requisito obrigatório para participar de projetos habitacionais federais, como o "Minha Casa, Minha Vida". Sem ele, a Moendo fica excluída de um dos maiores e mais lucrativos segmentos do mercado, limitando seu potencial de crescimento e forçando-a a focar em nichos de menor escala no setor público.</p>
+                </div>
+            </section>
+
+            <!-- Estratégia Section -->
+            <section id="estrategia" class="section">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Análise Estratégica e Recomendações</h2>
+                <p class="text-slate-600 mb-8">Análise SWOT e um roteiro para o crescimento futuro da Moendo Construções.</p>
+
+                <div class="mb-8">
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Análise SWOT</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="bg-green-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-green-800">Forças</h4>
+                            <ul class="list-disc list-inside text-green-700 mt-2 text-sm space-y-1">
+                                <li>Domínio de Processos Licitatórios</li>
+                                <li>Estrutura Corporativa Otimizada</li>
+                                <li>Flexibilidade e Agilidade Comercial</li>
+                                <li>Especialização em Construção a Seco</li>
+                            </ul>
+                        </div>
+                        <div class="bg-red-100 p-4 rounded-lg">
+                             <h4 class="font-bold text-red-800">Fraquezas</h4>
+                             <ul class="list-disc list-inside text-red-700 mt-2 text-sm space-y-1">
+                                <li>Ausência de Certificação PBQP-H</li>
+                                <li>Dependência de Contratos Públicos</li>
+                                <li>Comunicação de Marketing Desalinhada</li>
+                                <li>Portfólio Privado Pouco Documentado</li>
+                             </ul>
+                        </div>
+                        <div class="bg-blue-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-blue-800">Oportunidades</h4>
+                             <ul class="list-disc list-inside text-blue-700 mt-2 text-sm space-y-1">
+                                <li>Ciclo de Investimento do Novo PAC</li>
+                                <li>Crescimento do Mercado Regional</li>
+                                <li>Tendência de Construção Sustentável</li>
+                                <li>Entrada Estratégica no Segmento Habitacional</li>
+                             </ul>
+                        </div>
+                        <div class="bg-yellow-100 p-4 rounded-lg">
+                            <h4 class="font-bold text-yellow-800">Ameaças</h4>
+                            <ul class="list-disc list-inside text-yellow-700 mt-2 text-sm space-y-1">
+                                <li>Concorrência Acirrada</li>
+                                <li>Instabilidade Econômica e Política</li>
+                                <li>Aumento dos Custos de Materiais</li>
+                                <li>Escassez de Mão de Obra Qualificada</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-4 text-center">Recomendações Estratégicas</h3>
+                    <div id="recommendations-container" class="space-y-2"></div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const navLinks = document.querySelectorAll('aside nav a');
+            const sections = document.querySelectorAll('main .section');
+            const btnCnpj1 = document.getElementById('btn-cnpj1');
+            const btnCnpj2 = document.getElementById('btn-cnpj2');
+            const infoCnpj1 = document.getElementById('info-cnpj1');
+            const infoCnpj2 = document.getElementById('info-cnpj2');
+
+            const recommendations = [
+                { title: '1. Obter a Certificação PBQP-H (Prioridade Máxima)', content: 'Iniciar projeto interno para adequação ao SiAC. Esta é a iniciativa com o maior potencial de transformação, destravando o acesso ao bilionário mercado de habitação de interesse social.' },
+                { title: '2. Estruturar Unidade de Negócios para o Novo PAC', content: 'Criar equipe dedicada para monitorar editais e formar alianças estratégicas, escalando a expertise em licitações para projetos de infraestrutura de maior vulto.' },
+                { title: '3. Unificar e Fortalecer a Comunicação de Marketing', content: 'Reformular a presença digital para refletir a dualidade do negócio (público e privado). Criar um portfólio robusto com estudos de caso detalhados para atrair talentos, parceiros e investidores.' },
+                { title: '4. Alavancar o Nicho Privado para Diversificação', content: 'Utilizar a especialização em drywall para oferecer um leque mais amplo de serviços de reforma e construção corporativa, reduzindo a dependência do setor público e criando fluxos de receita mais estáveis.' }
+            ];
+
+            const recommendationsContainer = document.getElementById('recommendations-container');
+            recommendations.forEach(rec => {
+                const div = document.createElement('div');
+                div.className = 'border border-gray-200 rounded-lg';
+                div.innerHTML = `
+                    <button class="w-full text-left p-4 font-semibold text-slate-700 flex justify-between items-center hover:bg-slate-50">
+                        <span>${rec.title}</span>
+                        <span class="transform transition-transform duration-200">+</span>
+                    </button>
+                    <div class="px-4 pb-4 text-slate-600 text-sm hidden">
+                        ${rec.content}
+                    </div>
+                `;
+                recommendationsContainer.appendChild(div);
+            });
+
+            recommendationsContainer.addEventListener('click', function(e) {
+                const button = e.target.closest('button');
+                if (!button) return;
+                const content = button.nextElementSibling;
+                const icon = button.querySelector('span:last-child');
+                content.classList.toggle('hidden');
+                icon.textContent = content.classList.contains('hidden') ? '+' : '-';
+            });
+
+            function navigate(hash) {
+                if (!hash) hash = '#dashboard';
+
+                navLinks.forEach(link => {
+                    if (link.getAttribute('href') === hash) {
+                        link.classList.add('active');
+                    } else {
+                        link.classList.remove('active');
+                    }
+                });
+
+                sections.forEach(section => {
+                    if ('#' + section.id === hash) {
+                        section.classList.add('active');
+                    } else {
+                        section.classList.remove('active');
+                    }
+                });
+
+                if (hash === '#mercado' && !window.marketChartInstance) {
+                    renderMarketChart();
+                }
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const hash = this.getAttribute('href');
+                    window.location.hash = hash;
+                });
+            });
+            
+            window.addEventListener('hashchange', () => navigate(window.location.hash));
+
+            btnCnpj1.addEventListener('click', () => {
+                infoCnpj1.classList.remove('hidden');
+                infoCnpj2.classList.add('hidden');
+                btnCnpj1.classList.add('bg-white', 'text-custom-accent', 'shadow');
+                btnCnpj2.classList.remove('bg-white', 'text-custom-accent', 'shadow');
+            });
+
+            btnCnpj2.addEventListener('click', () => {
+                infoCnpj2.classList.remove('hidden');
+                infoCnpj1.classList.add('hidden');
+                btnCnpj2.classList.add('bg-white', 'text-custom-accent', 'shadow');
+                btnCnpj1.classList.remove('bg-white', 'text-custom-accent', 'shadow');
+            });
+            
+            function renderMarketChart() {
+                const ctx = document.getElementById('marketChart').getContext('2d');
+                const data = {
+                    labels: ['Novo PAC', 'Minha Casa, Minha Vida', 'Construção Sustentável', 'Investimento Privado'],
+                    datasets: [{
+                        label: 'Impacto no Crescimento do Setor',
+                        data: [90, 85, 65, 75],
+                        backgroundColor: [
+                            'rgba(20, 184, 166, 0.6)',
+                            'rgba(14, 165, 233, 0.6)',
+                            'rgba(132, 204, 22, 0.6)',
+                            'rgba(249, 115, 22, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgb(20, 184, 166)',
+                            'rgb(14, 165, 233)',
+                            'rgb(132, 204, 22)',
+                            'rgb(249, 115, 22)'
+                        ],
+                        borderWidth: 1
+                    }]
+                };
+                window.marketChartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: true, text: 'Principais Vetores de Investimento no Nordeste', font: { size: 16 } }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Nível de Impacto (0-100)' }
+                            }
+                        }
+                    }
+                });
+            }
+
+            navigate(window.location.hash || '#dashboard');
+        });
+    </script>
+
+</body>
+</html>
